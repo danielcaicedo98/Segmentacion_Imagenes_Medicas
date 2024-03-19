@@ -7,9 +7,14 @@ from tkinter import filedialog
 import tkinter as tk
 from matplotlib.path import Path
 from k_means import k_means
+from tkinter import ttk
 
-class NiftiViewer:    
+class NiftiViewer:
+    # global toggle_button
+
+    
     def __init__(self, nifti_file):
+        
         self.img = nib.load(nifti_file)
         self.data = self.img.get_fdata()
         self.shape = self.data.shape
@@ -41,7 +46,11 @@ class NiftiViewer:
         self.canvas_widget.grid(row=0, column=1, padx=10, pady=10)
 
         # Botón para activar/desactivar trazados
-        self.toggle_button = tk.Button(root, text="Activar/Desactivar Trazados", command=self.toggle_traces)
+        style = ttk.Style()        
+        style.configure('Custom.TButton', foreground="black", font=('Arial', 10, 'bold'), background="green")
+        # Se configura también el fondo del botón cuando está en estado normal y en estado activo (pressed)
+        style.map('Custom.TButton', background=[('active', 'blue'), ('pressed', '!disabled', 'blue')])
+        self.toggle_button = ttk.Button(root, text="Activar Trazado", command=self.toggle_traces,style='Custom.TButton', width=20)
         self.toggle_button.grid(row=2, column=0, padx=10, pady=10)
 
         self.ax.set_title("Axial")
@@ -53,18 +62,18 @@ class NiftiViewer:
         self.fig.canvas.mpl_connect('button_release_event', self.on_release)
 
         # Botón para guardar segmentación
-        self.save_button = tk.Button(root, text="Guardar segmentación", command=self.save_segmentation)
+        self.save_button = ttk.Button(root, text="Guardar trazado", command=self.save_segmentation,style='Custom.TButton', width=20)
         self.save_button.grid(row=1, column=1, padx=10, pady=10)
 
         # Botón para guardar isodata
-        self.save_button = tk.Button(root, text="Guardar segmentación Isodata", command=self.save_segmentation_isodata)
-        self.save_button.grid(row=2, column=1, padx=10, pady=10)
+        self.isodata_button = ttk.Button(root, text="Guardar Isodata", command=self.save_segmentation_isodata,style='Custom.TButton', width=20)
+        self.isodata_button.grid(row=2, column=1, padx=10, pady=10)
 
-        self.save_button = tk.Button(root, text="Guardar crecimiento de regiones", command=self.save_region_growing)
-        self.save_button.grid(row=0, column=2, padx=10, pady=10)
-
-        self.save_button = tk.Button(root, text="Guardar K-Means", command=lambda:k_means(self.img))
+        self.save_button = ttk.Button(root, text="Guardar crecimiento de regiones", command=self.save_region_growing,style='Custom.TButton', width=30)
         self.save_button.grid(row=1, column=2, padx=10, pady=10)
+
+        self.save_button = ttk.Button(root, text="Guardar K-Means", command=lambda:k_means(self.img),style='Custom.TButton', width=30)
+        self.save_button.grid(row=2, column=2, padx=10, pady=10)
 
     def update_axial(self, index):
         self.current_index_axial = int(index)
@@ -125,9 +134,15 @@ class NiftiViewer:
             self.fig.canvas.draw()
 
     def toggle_traces(self):
+        
+        if self.toggle_button.cget("text") == "Activar Trazado":
+            self.toggle_button.config(text="Desactivar Trazado")  
+        else:
+            self.toggle_button.config(text="Activar Trazado") 
+
         self.traces_enabled = not self.traces_enabled
-        if not self.traces_enabled:
-            self.traces = []  # Limpiar trazados al desactivar
+        # if not self.traces_enabled:
+        #     self.traces = []  # Limpiar trazados al desactivar
 
     def update_thickness(self, value):
         self.trace_thickness = int(value)
@@ -239,7 +254,7 @@ class NiftiViewer:
         recorrido = [seed_point]
 
         # Iterar hasta que la cola esté vacía o hasta alcanzar un número máximo de iteraciones
-        max_iterations = 100000
+        max_iterations = 10000
         for _ in range(max_iterations):
             if not cola:
                 break
@@ -264,9 +279,12 @@ def select_file():
 root = tk.Tk()
 root.title("Seleccionar imagen Nifti")
 root.geometry("1200x600")
-
+style = ttk.Style()        
+style.configure('Custom.TButton', foreground="black", font=('Arial', 10, 'bold'), background="green")
+        # Se configura también el fondo del botón cuando está en estado normal y en estado activo (pressed)
+style.map('Custom.TButton', background=[('active', 'blue'), ('pressed', '!disabled', 'blue')])
 # Crear el botón para seleccionar el archivo
-select_button = tk.Button(root, text="Seleccionar imagen Nifti", command=select_file)
+select_button = ttk.Button(root,style='Custom.TButton',text="Seleccionar imagen", command=select_file, width=20)
 select_button.grid(row=1, column=0, padx=10, pady=10)
 
 # Ejecutar el bucle principal de la ventana

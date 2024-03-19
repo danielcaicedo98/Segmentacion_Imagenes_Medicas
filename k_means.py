@@ -5,7 +5,7 @@ from tkinter import filedialog
 def k_means(imagen):
 
     def kmeans_segmentation(image_data, num_clusters, max_iterations=100):
-        # Flatten the image data to 1D array
+        # aplanando la matriz
         flattened_data = image_data.flatten()
         
         # Centroides iniciales aleatorios
@@ -13,22 +13,21 @@ def k_means(imagen):
         centroids = flattened_data[centroids_indices] + 1
         print(centroids)
         
-        # Iterate until convergence or max iterations reached
+        # iteraciones
         for _ in range(max_iterations):
             # Assign each data point to the nearest centroid
             distances = np.abs(flattened_data[:, np.newaxis] - centroids)
             labels = np.argmin(distances, axis=1)
             
-            # Update centroids
+            # actualizar los centroides
             new_centroids = np.array([flattened_data[labels == k].mean() for k in range(num_clusters)])
             
-            # Check for convergence
+            # verificar convergencia
             if np.all(centroids == new_centroids):
                 break
             
-            centroids = new_centroids
+            centroids = new_centroids        
         
-        # Assign labels back to original shape
         segmented_image = labels.reshape(image_data.shape)
         
         return segmented_image
