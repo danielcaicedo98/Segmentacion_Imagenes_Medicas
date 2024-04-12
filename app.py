@@ -8,6 +8,7 @@ import tkinter as tk
 from matplotlib.path import Path
 from k_means import k_means
 from tkinter import ttk
+from vedo import load, volume, show
 
 class NiftiViewer:
     # global toggle_button
@@ -74,6 +75,9 @@ class NiftiViewer:
 
         self.save_button = ttk.Button(root, text="Guardar K-Means", command=lambda:k_means(self.img),style='Custom.TButton', width=30)
         self.save_button.grid(row=2, column=2, padx=10, pady=10)
+
+        self.save_button = ttk.Button(root, text="Guardar 3D", command=self.save_segmentation_3d,style='Custom.TButton', width=30)
+        self.save_button.grid(row=1, column=3, padx=10, pady=10)
 
     def update_axial(self, index):
         self.current_index_axial = int(index)
@@ -198,6 +202,22 @@ class NiftiViewer:
             nib.save(img_nifti, file_path)
             print(f"Segmentación guardada como '{file_path}'")
 
+    def save_segmentation_3d(self):
+        # Algoritmo Isodata
+        
+        path_sl = "./k_means.nii"
+        mesh = load(path_sl)
+
+        show(mesh)
+
+        # Guardado del archivo
+        # file_path = filedialog.asksaveasfilename(defaultextension=".nii", filetypes=[("NIFTI files", "*.nii")])
+        # if file_path:
+        #     # Crear un objeto Nibabel con los datos de la segmentación
+        #     img_nifti = nib.Nifti1Image(img_th.astype(np.uint8), np.eye(4))  # Utilizamos np.eye(4) para la matriz de transformación (espacio físico)
+        #     nib.save(img_nifti, file_path)
+        #     print(f"Segmentación guardada como '{file_path}'")        
+
     def save_region_growing(self):
         img = self.data
 
@@ -254,7 +274,7 @@ class NiftiViewer:
         recorrido = [seed_point]
 
         # Iterar hasta que la cola esté vacía o hasta alcanzar un número máximo de iteraciones
-        max_iterations = 10000
+        max_iterations = 100000
         for _ in range(max_iterations):
             if not cola:
                 break

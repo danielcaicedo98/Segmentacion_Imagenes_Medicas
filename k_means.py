@@ -11,7 +11,7 @@ def k_means(imagen):
         # Centroides iniciales aleatorios
         centroids_indices = np.random.choice(flattened_data.size, size=num_clusters, replace=False) 
         centroids = flattened_data[centroids_indices] + 1
-        print(centroids)
+        # print(centroids)
         
         # iteraciones
         for _ in range(max_iterations):
