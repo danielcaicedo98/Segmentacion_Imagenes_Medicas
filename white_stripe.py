@@ -8,8 +8,7 @@ img = nib.load('imagen.nii')
 img_data = img.get_fdata()
 img_data = img_data[img_data > 10]
 img_original = img.get_fdata()
-print(img_data)
-print(img_data.flatten())
+
 # Calcular el histograma de intensidades
 hist, bins = np.histogram(img_data.flatten(), bins=50)
 
@@ -32,10 +31,7 @@ num_picos_representativos = 5  # Puedes ajustar este valor según tu necesidad
 picos_representativos = [p[0] for p in peaks_sorted_by_score[:num_picos_representativos]]
 
 ws_i = bins[picos_representativos[-1]]
-
 ws = img_original / ws_i
-# plt.hist(ws[ws > 0.1],bins=100)
-# plt.show()
 
 file_path = filedialog.asksaveasfilename(defaultextension=".nii", filetypes=[("NIFTI files", "*.nii")])
 if file_path:
