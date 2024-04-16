@@ -1,10 +1,9 @@
 import numpy as np
 import nibabel as nib
 
-def mediana_voxel_y_vecinos(voxel, vecinos):
-    valores = [voxel] + vecinos    
-    mediana = np.median(valores)
-    return mediana
+def promedio_voxel_y_vecinos(voxel, vecinos):
+    promedio = (np.sum(vecinos) + voxel) / (len(vecinos) + 1)
+    return promedio
 
 # Cargar la imagen
 img = nib.load('imagen.nii')
@@ -27,7 +26,7 @@ for i in range(1, shape[0] - 1):
                        img_data[i, j+1, k], img_data[i, j-1, k],
                        img_data[i, j, k+1], img_data[i, j, k-1]]
             # Calcular el promedio del voxel y sus vecinos
-            valor_promedio = mediana_voxel_y_vecinos(voxel_actual, vecinos)
+            valor_promedio = promedio_voxel_y_vecinos(voxel_actual, vecinos)
             # Guardar el valor del promedio en la nueva imagen
             nueva_img_data[i, j, k] = valor_promedio
 
