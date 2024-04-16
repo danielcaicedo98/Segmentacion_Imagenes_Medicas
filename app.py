@@ -6,15 +6,15 @@ from matplotlib.widgets import Slider
 from tkinter import filedialog
 import tkinter as tk
 from matplotlib.path import Path
-from k_means import k_means
+from segmentacion.k_means import k_means
 from tkinter import ttk
 from vedo import load, volume, show
-from mean_filter import Mean_Filter
-from median_filter import Median_Filter
-from white_stripe import White_Stripe
-from intensity_rescaling import Intensity_Rescaling
-from z_score import Z_Score
-
+from filtros.mean_filter import Mean_Filter
+from filtros.median_filter import Median_Filter
+from preprocesamiento.white_stripe import White_Stripe
+from preprocesamiento.intensity_rescaling import Intensity_Rescaling
+from preprocesamiento.z_score import Z_Score
+from preprocesamiento.histogram_matching import hist_match
 class NiftiViewer:
     # global toggle_button
 
@@ -99,6 +99,10 @@ class NiftiViewer:
 
         self.ir_button = ttk.Button(root, text="Intensity Rescaling", command=lambda:Intensity_Rescaling(self.img),style='Custom.TButton', width=20)
         self.ir_button.grid(row=3, column=3, padx=0, pady=0)
+
+        self.hm_button = ttk.Button(root, text="Histogram Matching", command=lambda:hist_match(self.img,5),style='Custom.TButton', width=20)
+        self.hm_button.grid(row=4, column=3, padx=0, pady=0)
+
 
         
 
