@@ -6,9 +6,15 @@ from matplotlib.widgets import Slider
 from tkinter import filedialog
 import tkinter as tk
 from matplotlib.path import Path
-from k_means import k_means
+from segmentacion.k_means import k_means
 from tkinter import ttk
-
+from vedo import load, volume, show
+from filtros.mean_filter import Mean_Filter
+from filtros.median_filter import Median_Filter
+from preprocesamiento.white_stripe import White_Stripe
+from preprocesamiento.intensity_rescaling import Intensity_Rescaling
+from preprocesamiento.z_score import Z_Score
+from preprocesamiento.histogram_matching import hist_match
 class NiftiViewer:
     # global toggle_button
 
@@ -43,7 +49,7 @@ class NiftiViewer:
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=root)
         self.canvas_widget = self.canvas.get_tk_widget()
-        self.canvas_widget.grid(row=0, column=1, padx=10, pady=10)
+        self.canvas_widget.grid(row=0, column=1, padx=1, pady=1)
 
         # Botón para activar/desactivar trazados
         style = ttk.Style()        
@@ -62,18 +68,43 @@ class NiftiViewer:
         self.fig.canvas.mpl_connect('button_release_event', self.on_release)
 
         # Botón para guardar segmentación
-        self.save_button = ttk.Button(root, text="Guardar trazado", command=self.save_segmentation,style='Custom.TButton', width=20)
+        self.save_button = ttk.Button(root, text="Guardar trazado", command=self.save_segmentation,style='Custom.TButton', width=30)
         self.save_button.grid(row=1, column=1, padx=10, pady=10)
 
         # Botón para guardar isodata
-        self.isodata_button = ttk.Button(root, text="Guardar Isodata", command=self.save_segmentation_isodata,style='Custom.TButton', width=20)
+        self.isodata_button = ttk.Button(root, text="Guardar Isodata", command=self.save_segmentation_isodata,style='Custom.TButton', width=30)
         self.isodata_button.grid(row=2, column=1, padx=10, pady=10)
+        
 
         self.save_button = ttk.Button(root, text="Guardar crecimiento de regiones", command=self.save_region_growing,style='Custom.TButton', width=30)
-        self.save_button.grid(row=1, column=2, padx=10, pady=10)
+        self.save_button.grid(row=3, column=1, padx=10, pady=10)
 
         self.save_button = ttk.Button(root, text="Guardar K-Means", command=lambda:k_means(self.img),style='Custom.TButton', width=30)
-        self.save_button.grid(row=2, column=2, padx=10, pady=10)
+        self.save_button.grid(row=4, column=1, padx=10, pady=10)
+
+        self.save_button = ttk.Button(root, text="Guardar 3D", command=self.save_segmentation_3d,style='Custom.TButton', width=20)
+        self.save_button.grid(row=3, column=0, padx=10, pady=10)
+
+        self.mean_filter = ttk.Button(root, text="Mean Filter", command=lambda:Mean_Filter(self.img),style='Custom.TButton', width=20)
+        self.mean_filter.grid(row=0, column=0, padx=1, pady=1)
+
+        self.median_filter = ttk.Button(root, text="Median Filter", command=lambda:Median_Filter(self.img),style='Custom.TButton', width=20)
+        self.median_filter.grid(row=0, column=2, padx=0, pady=0)
+
+        self.ws_button = ttk.Button(root, text="White Stripe", command=lambda:White_Stripe(self.img),style='Custom.TButton', width=20)
+        self.ws_button.grid(row=1, column=3, padx=0, pady=0)
+
+        self.zs_button = ttk.Button(root, text="Z Score", command=lambda:Z_Score(self.img),style='Custom.TButton', width=20)
+        self.zs_button.grid(row=2, column=3, padx=0, pady=0)
+
+        self.ir_button = ttk.Button(root, text="Intensity Rescaling", command=lambda:Intensity_Rescaling(self.img),style='Custom.TButton', width=20)
+        self.ir_button.grid(row=3, column=3, padx=0, pady=0)
+
+        self.hm_button = ttk.Button(root, text="Histogram Matching", command=lambda:hist_match(self.img,5),style='Custom.TButton', width=20)
+        self.hm_button.grid(row=4, column=3, padx=0, pady=0)
+
+
+        
 
     def update_axial(self, index):
         self.current_index_axial = int(index)
@@ -198,6 +229,22 @@ class NiftiViewer:
             nib.save(img_nifti, file_path)
             print(f"Segmentación guardada como '{file_path}'")
 
+    def save_segmentation_3d(self):
+        # Algoritmo Isodata
+        
+        path_sl = "./k_means.nii"
+        mesh = load(path_sl)
+
+        show(mesh)
+
+        # Guardado del archivo
+        # file_path = filedialog.asksaveasfilename(defaultextension=".nii", filetypes=[("NIFTI files", "*.nii")])
+        # if file_path:
+        #     # Crear un objeto Nibabel con los datos de la segmentación
+        #     img_nifti = nib.Nifti1Image(img_th.astype(np.uint8), np.eye(4))  # Utilizamos np.eye(4) para la matriz de transformación (espacio físico)
+        #     nib.save(img_nifti, file_path)
+        #     print(f"Segmentación guardada como '{file_path}'")        
+
     def save_region_growing(self):
         img = self.data
 
@@ -254,7 +301,7 @@ class NiftiViewer:
         recorrido = [seed_point]
 
         # Iterar hasta que la cola esté vacía o hasta alcanzar un número máximo de iteraciones
-        max_iterations = 10000
+        max_iterations = 100000
         for _ in range(max_iterations):
             if not cola:
                 break
@@ -278,7 +325,7 @@ def select_file():
 # Crear la ventana principal
 root = tk.Tk()
 root.title("Seleccionar imagen Nifti")
-root.geometry("1200x600")
+root.geometry("1200x720")
 style = ttk.Style()        
 style.configure('Custom.TButton', foreground="black", font=('Arial', 10, 'bold'), background="green")
         # Se configura también el fondo del botón cuando está en estado normal y en estado activo (pressed)
