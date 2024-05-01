@@ -15,6 +15,9 @@ from preprocesamiento.white_stripe import White_Stripe
 from preprocesamiento.intensity_rescaling import Intensity_Rescaling
 from preprocesamiento.z_score import Z_Score
 from preprocesamiento.histogram_matching import hist_match
+from segmentacion.isodata import save_segmentation_isodata
+from segmentacion.region_growing import save_region_growing
+
 class NiftiViewer:
     # global toggle_button
 
@@ -72,11 +75,11 @@ class NiftiViewer:
         self.save_button.grid(row=1, column=1, padx=10, pady=10)
 
         # Botón para guardar isodata
-        self.isodata_button = ttk.Button(root, text="Guardar Isodata", command=self.save_segmentation_isodata,style='Custom.TButton', width=30)
+        self.isodata_button = ttk.Button(root, text="Guardar Isodata", command=lambda:save_segmentation_isodata(self.img),style='Custom.TButton', width=30)
         self.isodata_button.grid(row=2, column=1, padx=10, pady=10)
         
 
-        self.save_button = ttk.Button(root, text="Guardar crecimiento de regiones", command=self.save_region_growing,style='Custom.TButton', width=30)
+        self.save_button = ttk.Button(root, text="Guardar crecimiento de regiones", command=lambda:save_region_growing(self.img),style='Custom.TButton', width=30)
         self.save_button.grid(row=3, column=1, padx=10, pady=10)
 
         self.save_button = ttk.Button(root, text="Guardar K-Means", command=lambda:k_means(self.img),style='Custom.TButton', width=30)
@@ -204,31 +207,7 @@ class NiftiViewer:
         else:
             print("No hay trazos para guardar.")
 
-    def save_segmentation_isodata(self):
-        # Algoritmo Isodata
-        img = self.data
-        delta = 0.1
-        tau_init = 100
-        t = 0
-        tau_t = tau_init
-        while True:
-            img_th = img > tau_t
-            m_foreground = img[img_th == 1].mean()
-            m_background = img[img_th == 0].mean()
-            tau_new = 0.5 * (m_background + m_foreground)
-
-            if abs(tau_new - tau_t) < delta:
-                break
-            tau_t = tau_new
-
-        # Guardado del archivo
-        file_path = filedialog.asksaveasfilename(defaultextension=".nii", filetypes=[("NIFTI files", "*.nii")])
-        if file_path:
-            # Crear un objeto Nibabel con los datos de la segmentación
-            img_nifti = nib.Nifti1Image(img_th.astype(np.uint8), np.eye(4))  # Utilizamos np.eye(4) para la matriz de transformación (espacio físico)
-            nib.save(img_nifti, file_path)
-            print(f"Segmentación guardada como '{file_path}'")
-
+    
     def save_segmentation_3d(self):
         # Algoritmo Isodata
         
@@ -245,76 +224,7 @@ class NiftiViewer:
         #     nib.save(img_nifti, file_path)
         #     print(f"Segmentación guardada como '{file_path}'")        
 
-    def save_region_growing(self):
-        img = self.data
-
-        # Crear una máscara binaria para almacenar la segmentación
-        img_th = np.zeros_like(img)
-
-        # Punto inicial
-        # seed_point = (110, 20, 100)
-        image_shape = img.shape
-        seed_point = tuple(dim // 2 for dim in image_shape)
-
-        # Valor de tolerancia
-        tolerancia = 80
-
-        # Cola para almacenar puntos por visitar
-        cola = [seed_point]
-
-        # Movimientos
-        def movimiento(point, direction):
-            x, y, z = point
-            if direction == 'derecha':
-                return x + 1, y, z
-            elif direction == 'izquierda':
-                return x - 1, y, z
-            elif direction == 'arriba':
-                return x, y + 1, z
-            elif direction == 'abajo':
-                return x, y - 1, z
-            elif direction == 'adelante':
-                return x, y, z + 1
-            elif direction == 'atras':
-                return x, y, z - 1
-
-        # Función para realizar desplazamientos
-        arr_intensity = []
-        arr_intensity.append(img[seed_point])
-        def desplazamiento(point):
-            mean_intensity = np.mean(arr_intensity)
-            # Definir los vecinos
-            vecinos = ['arriba', 'abajo', 'derecha', 'izquierda', 'atras','adelante']
-
-            for vecino in vecinos:
-                new_point = movimiento(point, vecino)
-                if new_point not in recorrido:
-                    if abs(img[new_point] - mean_intensity) <= tolerancia:
-                        img_th[new_point] = 1
-                        arr_intensity.append(img[new_point])
-                        recorrido.append(new_point)
-                        cola.append(new_point)
-                    else:
-                        img_th[new_point] = 0
-
-        # Inicializar lista de puntos recorridos
-        recorrido = [seed_point]
-
-        # Iterar hasta que la cola esté vacía o hasta alcanzar un número máximo de iteraciones
-        max_iterations = 100000
-        for _ in range(max_iterations):
-            if not cola:
-                break
-            point = cola.pop(0)
-            desplazamiento(point)
-
-        file_path = filedialog.asksaveasfilename(defaultextension=".nii", filetypes=[("NIFTI files", "*.nii")])
-        if file_path:
-            # Crear un objeto Nibabel con los datos de la segmentación
-            img_nifti = nib.Nifti1Image(img_th.astype(np.uint8), np.eye(4))  # Utilizamos np.eye(4) para la matriz de transformación (espacio físico)
-            nib.save(img_nifti, file_path)
-            print(f"Segmentación guardada como '{file_path}'")
-
+    
 
 def select_file():
     file_path = filedialog.askopenfilename(filetypes=[("NIFTI files", "*.nii")])
