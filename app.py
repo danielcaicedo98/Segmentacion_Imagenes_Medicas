@@ -17,11 +17,13 @@ from preprocesamiento.histogram_matching import hist_match
 from bordes.border_differences import Border_Differences
 from bordes.border_first import Border_First
 from bordes.border_second import Border_Second
+from registration.registration import registration_euler
 
 
 
 class NiftiViewer:
     def __init__(self, master, nifti_file):
+        self.ruta = nifti_file
         self.master = master
         self.img = nib.load(nifti_file)
         self.data = self.img.get_fdata()
@@ -36,8 +38,8 @@ class NiftiViewer:
 
         # Frame para la imagen
         self.image_frame = tk.Frame(master)
-        self.image_frame.grid(row=0, column=0)
-        self.fig, self.ax = plt.subplots(figsize=(5, 5))
+        self.image_frame.grid(row=0, column=1)
+        self.fig, self.ax = plt.subplots(figsize=(4, 4))
         self.ax.imshow(self.data[:, :, self.current_index_axial], cmap='gray')
         self.ax.set_title("Axial")
         self.ax.set_aspect('equal')
@@ -76,14 +78,14 @@ class NiftiViewer:
         # Botón para activar/desactivar modo de anotación
         self.annotation_mode = False
         self.annotation_buffer = []
-        self.annotation_button = ttk.Button(master, text="Modo Anotación", command=self.toggle_annotation_mode)
-        self.annotation_button.grid(row=2, column=0, padx=10, pady=10)
+        self.annotation_button = ttk.Button(master, text="  Modo Anotación   ", command=self.toggle_annotation_mode)
+        self.annotation_button.grid(row=3, column=0, padx=10, pady=10)
 
         # Botón para activar/desactivar modo de segmentación
         self.segmentation_mode = False
         self.segmentation_buffer = []
         self.segmentation_button = ttk.Button(master, text="Modo Segmentación", command=self.toggle_segmentation_mode)
-        self.segmentation_button.grid(row=3, column=0, padx=10, pady=10)
+        self.segmentation_button.grid(row=4, column=0)
 
         # Botón para guardar las anotaciones
         # self.save_annotation_button = ttk.Button(master, text="Guardar Anotaciones", command=self.save_annotations)
@@ -114,7 +116,7 @@ class NiftiViewer:
 
         # Menú desplegable anotación
         self.anotacion_frame = tk.Frame(master)
-        self.anotacion_frame.grid(row=6, column=0, padx=10, pady=10)
+        self.anotacion_frame.grid(row=5, column=1, padx=10, pady=10)
         self.selected_option_anotacion = tk.StringVar()
         self.selected_option_anotacion.set("Anotación")
         self.options_menu_anotacion = ttk.OptionMenu(self.anotacion_frame, self.selected_option_anotacion, "Anotación", "Guardar Anotacion", "Cargar Anotacion", command=self.call_selected_anotation)
@@ -130,7 +132,7 @@ class NiftiViewer:
 
         # Menú desplegable filtros
         self.menu_frame_filt = tk.Frame(master)
-        self.menu_frame_filt.grid(row=3, column=1, padx=10, pady=10)
+        self.menu_frame_filt.grid(row=3, column=1)
         self.selected_option_filt = tk.StringVar()
         self.selected_option_filt.set("Seleccione Filtro")
         self.options_menu_filt = ttk.OptionMenu(self.menu_frame_filt, self.selected_option_filt, "Seleccione Filtro", "Mean", "Median", command=self.call_selected_filter)
@@ -146,11 +148,19 @@ class NiftiViewer:
 
         # Menú desplegable bordes
         self.menu_frame_bord = tk.Frame(master)
-        self.menu_frame_bord.grid(row=1, column=2, padx=10, pady=10)
+        self.menu_frame_bord.grid(row=2, column=2, padx=10, pady=10)
         self.selected_option_bord = tk.StringVar()
         self.selected_option_bord.set("Seleccione Borde")
         self.options_menu_bord = ttk.OptionMenu(self.menu_frame_bord, self.selected_option_bord,  "Bordes","Primera Derivada", "Segunda Derivada", "Diferencia",command=self.call_selected_border)
         self.options_menu_bord.pack()
+
+        # Menú desplegable registro
+        self.menu_frame_reg = tk.Frame(master)
+        self.menu_frame_reg.grid(row=3, column=2, padx=10, pady=10)
+        self.selected_option_reg = tk.StringVar()
+        self.selected_option_reg.set("Seleccione Borde")
+        self.options_menu_reg = ttk.OptionMenu(self.menu_frame_reg, self.selected_option_reg,  "Registro","Registro Euler",command=self.call_selected_registration)
+        self.options_menu_reg.pack()
 
 
 
@@ -299,7 +309,7 @@ class NiftiViewer:
 
     def call_selected_segmentation(self, option):
         if option == "Region Growing":
-            save_region_growing(self.img)
+            save_region_growing(self)
         elif option == "K-Means":
             k_means(self.img)
         elif option == "Isodata":
@@ -336,7 +346,15 @@ class NiftiViewer:
             Border_Second(self.img)
         elif option == "Diferencia":
             Border_Differences(self.img)
-            
+
+    def call_selected_registration(self, option):
+        if option == "Registro Euler":
+            registration_euler(self.ruta)
+        elif option == "Opción 2":
+            self.option2_function()
+        elif option == "Opción 3":
+            self.option3_function()   
+
     def call_selected_option(self, option):
         if option == "Opción 1":
             self.option1_function()
@@ -446,7 +464,7 @@ root.geometry("800x800")
 
 # Crear el botón para seleccionar el archivo
 select_button = ttk.Button(root, text="Seleccionar imagen", command=select_file)
-select_button.grid(row=1, column=1, padx=10, pady=10)
+select_button.grid(row=2, column=0, padx=10, pady=10)
 
 # Ejecutar el bucle principal de la ventana
 root.mainloop()
