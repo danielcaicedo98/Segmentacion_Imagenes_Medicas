@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backend_bases import MouseButton
+from visualizacion.visualizacion_3d import save_segmentation_3d
 from segmentacion.k_means import k_means
 from segmentacion.region_growing import save_region_growing
 from segmentacion.isodata import save_segmentation_isodata
@@ -119,7 +120,7 @@ class NiftiViewer:
         self.anotacion_frame.grid(row=5, column=1, padx=10, pady=10)
         self.selected_option_anotacion = tk.StringVar()
         self.selected_option_anotacion.set("Anotación")
-        self.options_menu_anotacion = ttk.OptionMenu(self.anotacion_frame, self.selected_option_anotacion, "Anotación", "Guardar Anotacion", "Cargar Anotacion", command=self.call_selected_anotation)
+        self.options_menu_anotacion = ttk.OptionMenu(self.anotacion_frame, self.selected_option_anotacion, "Anotación", "Guardar Anotacion", "Cargar Anotacion", "Visualizar 3D", command=self.call_selected_anotation)
         self.options_menu_anotacion.pack()
 
         # Menú desplegable segementacion
@@ -321,6 +322,8 @@ class NiftiViewer:
             self.save_segmentation()
         elif option == "Cargar Anotacion":
             self.load_segmentation()
+        elif option == "Visualizar 3D":
+            save_segmentation_3d() 
         
     def call_selected_filter(self, option):
         if option == "Mean":
