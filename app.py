@@ -19,11 +19,14 @@ from bordes.border_differences import Border_Differences
 from bordes.border_first import Border_First
 from bordes.border_second import Border_Second
 from registration.registration import registration_euler
+from segmentacion.laplacian_segmentation import laplacian_coordinates_segmentation
 
 
 
 class NiftiViewer:
     def __init__(self, master, nifti_file):
+        self.B = []
+        self.F = []
         self.ruta = nifti_file
         self.master = master
         self.img = nib.load(nifti_file)
@@ -104,9 +107,9 @@ class NiftiViewer:
         # self.load_segmentation_button = ttk.Button(master, text="Cargar Segmentación", command=self.load_segmentation)
         # self.load_segmentation_button.grid(row=7, column=0, padx=10, pady=10)
 
-        # Botón para imprimir los voxeles con anotaciones
+        #Botón para imprimir los voxeles con anotaciones
         # self.print_voxels_button = ttk.Button(master, text="Imprimir Voxeles con Anotaciones", command=self.print_annotations)
-        # self.print_voxels_button.grid(row=1, column=2, padx=10, pady=10)
+        # self.print_voxels_button.grid(row=1, column=3, padx=10, pady=10)
 
         # Botón para imprimir los voxeles con segmentación
         # self.print_segmented_voxels_button = ttk.Button(master, text="Imprimir Voxeles Segmentados", command=self.print_segmentation)
@@ -128,7 +131,7 @@ class NiftiViewer:
         self.menu_frame_seg.grid(row=2, column=1, padx=10, pady=10)
         self.selected_option_seg = tk.StringVar()
         self.selected_option_seg.set("Seleccione Segmentación")
-        self.options_menu_seg = ttk.OptionMenu(self.menu_frame_seg, self.selected_option_seg, "Seleccione Segmentación", "Isodata", "Region Growing", "K-Means", command=self.call_selected_segmentation)
+        self.options_menu_seg = ttk.OptionMenu(self.menu_frame_seg, self.selected_option_seg, "Seleccione Segmentación", "Isodata", "Region Growing", "K-Means", "Laplaciana", command=self.call_selected_segmentation)
         self.options_menu_seg.pack()
 
         # Menú desplegable filtros
@@ -226,6 +229,9 @@ class NiftiViewer:
         except FileNotFoundError:
             print("No se encontraron anotaciones guardadas.")
 
+    def voxels_annotation(self):
+        print(self.annotations)
+
     # def draw_saved_annotations(self):
     #     self.ax.clear()
     #     self.ax.imshow(self.data[:, :, self.get_current_slice()], cmap='gray')
@@ -309,7 +315,12 @@ class NiftiViewer:
             return self.current_index_coronal
 
     def call_selected_segmentation(self, option):
-        if option == "Region Growing":
+        if option == "Laplaciana":
+            self.return_annotations()
+            self.return_segmentation()
+            # print(self.B)
+            # laplacian_coordinates_segmentation(self.img,self.B,self.F)
+        elif option == "Region Growing":
             save_region_growing(self)
         elif option == "K-Means":
             k_means(self.img)
@@ -376,11 +387,38 @@ class NiftiViewer:
     def option3_function(self):
         print("Seleccionó la Opción 3")
 
-    def print_annotations(self):
+    def return_segmentation(self):
         print("Voxels con anotaciones:")
-        for annotation in self.annotations:
-            view, slice_index, voxel_list = annotation
-            print(f"Vista: {view.capitalize()}, Slice: {slice_index}, Voxels: {voxel_list}")
+        # print(self.annotations[0][0])
+        for segmentation in self.segmentation:
+            view, slice_index, voxel_list = segmentation
+            # if view == self.current_view and slice_index == self.get_current_slice():            
+            for voxel in voxel_list:
+                if view == "sagittal":
+                    self.F.append((slice_index, voxel[0], voxel[1]))
+                elif view == "coronal":
+                    self.F.append((voxel[0], slice_index, voxel[1]))    
+                elif view == "axial":
+                    self.F.append((voxel[0], voxel[1],slice_index))
+        print(self.F) 
+
+    def return_annotations(self):
+        print("Voxels con anotaciones:")
+        # print(self.annotations[0][0])
+        for annotations in self.annotations:
+            view, slice_index, voxel_list = annotations
+            # if view == self.current_view and slice_index == self.get_current_slice():            
+            for voxel in voxel_list:
+                if view == "sagittal":
+                    self.B.append((slice_index, voxel[0], voxel[1]))
+                elif view == "coronal":
+                    self.B.append((voxel[0], slice_index, voxel[1]))    
+                elif view == "axial":
+                    self.B.append((voxel[0], voxel[1],slice_index))                
+        print(self.B)                
+        # for annotation in self.annotations:
+        #     view, slice_index, voxel_list = annotation
+        #     print(f"Vista: {view.capitalize()}, Slice: {slice_index}, Voxels: {voxel_list}")
 
     def print_segmentation(self):
         print("Voxels segmentados:")
