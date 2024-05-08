@@ -319,7 +319,7 @@ class NiftiViewer:
             self.return_annotations()
             self.return_segmentation()
             # print(self.B)
-            # laplacian_coordinates_segmentation(self.img,self.B,self.F)
+            laplacian_coordinates_segmentation(self.img,self.B,self.F)
         elif option == "Region Growing":
             save_region_growing(self)
         elif option == "K-Means":
@@ -400,6 +400,7 @@ class NiftiViewer:
                     self.F.append((voxel[0], slice_index, voxel[1]))    
                 elif view == "axial":
                     self.F.append((voxel[0], voxel[1],slice_index))
+        self.F = list(set(self.F))        
         print(self.F) 
 
     def return_annotations(self):
@@ -415,7 +416,9 @@ class NiftiViewer:
                     self.B.append((voxel[0], slice_index, voxel[1]))    
                 elif view == "axial":
                     self.B.append((voxel[0], voxel[1],slice_index))                
-        print(self.B)                
+        
+        self.B = list(set(self.B))     
+        print(self.B)            
         # for annotation in self.annotations:
         #     view, slice_index, voxel_list = annotation
         #     print(f"Vista: {view.capitalize()}, Slice: {slice_index}, Voxels: {voxel_list}")

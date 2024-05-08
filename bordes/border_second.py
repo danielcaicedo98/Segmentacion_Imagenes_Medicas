@@ -43,7 +43,9 @@ def Border_Second(img):
     border_D_xy = scipy.ndimage.convolve(border_x, kernel_y)
     border_D_xz = scipy.ndimage.convolve(border_x, kernel_z)
     # Calcular la magnitud del gradiente de los bordes
-    magnitude = np.sqrt(border_D_x ** 2 + border_D_y ** 2 + border_D_z ** 2 + 2 * (border_D_xy ** 2 + border_D_xz ** 2)) 
+    # magnitude = np.sqrt(border_D_x ** 2 + border_D_y ** 2 + border_D_z ** 2 + 2 * (border_D_xy ** 2 + border_D_xz ** 2)) 
+    magnitude = np.sqrt(border_D_x ** 2 + border_D_y ** 2 +  border_D_xy) 
+
 
     file_path = filedialog.asksaveasfilename(defaultextension=".nii", filetypes=[("NIFTI files", "*.nii")])
     if file_path:

@@ -37,7 +37,7 @@ def laplacian_coordinates_segmentation(img,B,F):
     N = []
     D = []
     # Crear una matriz para la nueva imagen con la misma forma que la imagen original
-    nueva_img_data = np.zeros_like(img_data)
+    
     shape = img_data.shape
     # print(shape)
     def calculate_sigma(edges):
@@ -117,31 +117,31 @@ def laplacian_coordinates_segmentation(img,B,F):
             if  V[i] in F:    
                 suma_f = k2 * np.linalg.norm(x[i] - xF)**2
             if V[i] in V:    
-                suma_v = k3 * np.linalg.norm(x[i]*D[i] - sum(W[i][j]*x[j] for j in range(0,len(N[i]))) )**2            
-            Ex += suma_b + suma_f + suma_v
+                suma_v = k3 * np.linalg.norm(x[i]*D[i] - sum(W[i][j]*x[j] for j in range(len(N[i]))))**2            
+        Ex += suma_b + suma_f + suma_v
         return Ex   
 
     x_initial = np.zeros(len(V))
 
     # Minimización de la función de pérdida
-    result = minimize(loss_function, x_initial, method='CG')
+    # result = minimize(loss_function, x_initial, method='CG')
+    result = minimize(loss_function, x_initial,method='BFGS', tol=1e-3)
 
     # Los valores óptimos de x
     x_optimal = result.x
-    # print(len(x_optimal))
-    # print("Valores óptimos de x que minimizan En:")
-    # print(x_optimal)
+    
     y = np.zeros(len(V))
+    # nueva_img_data = np.zeros_like(img_data)
 
 
     for i in range(len(V)):
         if (x_optimal[i] > ((xB + xF) / 2)):
-            nueva_img_data[V[i]] = xB
+            # nueva_img_data[V[i]] = xB
             y[i] = xB
         else:
-            nueva_img_data[V[i]] = xF
+            # nueva_img_data[V[i]] = xF
             y[i] = xF    
-
+    nueva_img_data = y.reshape(img_data.shape)
     file_path = filedialog.asksaveasfilename(defaultextension=".nii", filetypes=[("NIFTI files", "*.nii")])
     if file_path:
         # Crear un objeto Nibabel con los datos de la segmentación
