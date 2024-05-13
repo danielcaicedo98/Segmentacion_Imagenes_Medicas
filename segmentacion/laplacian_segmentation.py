@@ -28,18 +28,20 @@ def laplacian_coordinates_segmentation(img,B,F):
     #                       [5, 5, 5, 5]],
     #                       ])
 
+    # B = [(0, 0, 0), (0, 0, 1), (0, 0, 2), (0, 0, 3), (0, 1, 0), (0, 1, 1), (0, 1, 2), (0, 1, 3)]
+    # F = [(2, 3, 3), (3, 0, 0), (3, 0, 1), (3, 0, 2), (3, 0, 3), (3, 1, 0), (3, 1, 1), (3, 1, 2),
+    #     (3, 1, 3), (3, 2, 0), (3, 2, 1), (3, 2, 2)]    
+
     height, width, depth, = img_data.shape
 
-
+    # Definiendo las variables necesarias
     V = [(d, h, w) for d in range(height) for h in range(width) for w in range(depth)]
     E = []
     W = []
     N = []
     D = []
-    # Crear una matriz para la nueva imagen con la misma forma que la imagen original
-    
-    shape = img_data.shape
-    # print(shape)
+           
+    #Calcular sigma       
     def calculate_sigma(edges):
         sigma = 0
         for i in edges:
@@ -91,20 +93,15 @@ def laplacian_coordinates_segmentation(img,B,F):
                 d = sum(w)
                 D.append(d)
                 W.append(w)
-    # print(N)
-    # print(V)
-    # print(cont)
-    # print(len(W))
+    
     k1 = 1
     k2 = 1
     k3 = 1
 
     xB = 1
     xF = 0.1
-    # B = [(0, 0, 0), (0, 0, 1), (0, 0, 2), (0, 0, 3), (0, 1, 0), (0, 1, 1), (0, 1, 2), (0, 1, 3)]
-    # F = [(2, 3, 3), (3, 0, 0), (3, 0, 1), (3, 0, 2), (3, 0, 3), (3, 1, 0), (3, 1, 1), (3, 1, 2),
-    #     (3, 1, 3), (3, 2, 0), (3, 2, 1), (3, 2, 2)]
-
+    
+    
 
     def loss_function(x):
         suma_b = 0
@@ -117,7 +114,7 @@ def laplacian_coordinates_segmentation(img,B,F):
             if  V[i] in F:    
                 suma_f = k2 * np.linalg.norm(x[i] - xF)**2
             if V[i] in V:    
-                suma_v = k3 * np.linalg.norm(x[i]*D[i] - sum(W[i][j]*x[j] for j in range(len(N[i]))))**2            
+                suma_v = k3 * np.linalg.norm(D[i]*x[i] - sum(W[i][j]*x[j] for j in range(len(N[i]))))**2            
         Ex += suma_b + suma_f + suma_v
         return Ex   
 
@@ -148,3 +145,5 @@ def laplacian_coordinates_segmentation(img,B,F):
         img_nifti = nib.Nifti1Image(nueva_img_data, img.affine)
         nib.save(img_nifti, file_path)
         print(f"Segmentación guardada como '{file_path}'")
+
+    print(e)    
