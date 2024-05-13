@@ -163,7 +163,7 @@ class NiftiViewer:
         self.menu_frame_reg.grid(row=3, column=2, padx=10, pady=10)
         self.selected_option_reg = tk.StringVar()
         self.selected_option_reg.set("Seleccione Borde")
-        self.options_menu_reg = ttk.OptionMenu(self.menu_frame_reg, self.selected_option_reg,  "Registro","Registro Euler",command=self.call_selected_registration)
+        self.options_menu_reg = ttk.OptionMenu(self.menu_frame_reg, self.selected_option_reg,  "Registro","Registro Afin",command=self.call_selected_registration)
         self.options_menu_reg.pack()
 
 
